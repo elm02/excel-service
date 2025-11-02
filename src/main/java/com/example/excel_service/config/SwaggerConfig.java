@@ -4,6 +4,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -54,21 +55,9 @@ public class SwaggerConfig {
         );
 
         responses.addApiResponse("400", new ApiResponse()
-                .description("Файл не найден")
+                .description("Ошибка валидации или неверный формат файла")
                 .content(new Content().addMediaType("application/json",
-                        new MediaType().example(createFileNotFoundExample())))
-        );
-
-        responses.addApiResponse("400", new ApiResponse()
-                .description("Неверный формат файла")
-                .content(new Content().addMediaType("application/json",
-                        new MediaType().example(createInvalidFormatExample())))
-        );
-
-        responses.addApiResponse("400", new ApiResponse()
-                .description("Некорректный параметр N")
-                .content(new Content().addMediaType("application/json",
-                        new MediaType().example(createInvalidNExample())))
+                        new MediaType().examples(createErrorExamples())))
         );
 
         return responses;
@@ -80,21 +69,30 @@ public class SwaggerConfig {
         return example;
     }
 
-    private Object createFileNotFoundExample() {
-        Map<String, String> example = new HashMap<>();
-        example.put("error", "Файл не найден по пути: C:/data/numbers.xlsx");
-        return example;
+    private Map<String, Example> createErrorExamples() {
+        Map<String, Example> examples = new HashMap<>();
+
+        Example fileNotFoundExample = new Example();
+        fileNotFoundExample.setSummary("Файл не найден");
+        fileNotFoundExample.setValue(createErrorValue("Файл не найден по пути: C:/data/numbers.xlsx"));
+        examples.put("fileNotFound", fileNotFoundExample);
+
+        Example invalidFormatExample = new Example();
+        invalidFormatExample.setSummary("Неверный формат файла");
+        invalidFormatExample.setValue(createErrorValue("Файл должен быть в формате .xlsx"));
+        examples.put("invalidFormat", invalidFormatExample);
+
+        Example invalidNExample = new Example();
+        invalidNExample.setSummary("Некорректный параметр N");
+        invalidNExample.setValue(createErrorValue("N должно быть от 1 до 10"));
+        examples.put("invalidN", invalidNExample);
+
+        return examples;
     }
 
-    private Object createInvalidFormatExample() {
-        Map<String, String> example = new HashMap<>();
-        example.put("error", "Файл должен быть в формате .xlsx");
-        return example;
-    }
-
-    private Object createInvalidNExample() {
-        Map<String, String> example = new HashMap<>();
-        example.put("error", "N должно быть от 1 до 10");
-        return example;
+    private Map<String, String> createErrorValue(String message) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", message);
+        return error;
     }
 }
